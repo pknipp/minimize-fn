@@ -1,13 +1,13 @@
 //amoeba.js
 
-const minimize = (p, fTol, fn) => {
+const minimize = (p, fn, fTol, itMax) => {
   const [alpha, beta, gamma] = [1, 0.5, 2];
-  const itMax = 500;
+  fTol = fTol || 1e-10;
+  itMax = itMax || 500;
   const y = p.map(vec => fn(vec));
   const nDim = p[0].length;
   const mPts = nDim + 1;
   let iter = 0;
-  let msg = "";
   const returnMe = {p, y};
   //1
   while (true) {
@@ -32,16 +32,12 @@ const minimize = (p, fTol, fn) => {
     for (let i = 0; i < mPts; i++) {
       if (i !== iHigh) {
         for (let j = 0; j < nDim; j++) {
-          pBar[j] += p[i][j];
+          pBar[j] += p[i][j] / nDim;
         }
       }
     }
-    const pR = [];
-    //15
-    for (let j = 0; j < nDim; j++) {
-      pBar[j] /= nDim;
-      pR.push((1 + alpha) * pBar[j] - alpha * p[iHigh][j]);
-    }
+    // 15
+    const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * p[iHigh][j]);
     const yPr = fn(pR);
     if (yPr <= y[iLow]) {
       pRr = [];
