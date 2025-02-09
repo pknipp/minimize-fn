@@ -72,11 +72,8 @@ const minimize = (p, fn, fTol, itMax) => {
       const pRr = p[iHigh].map((coord, j) => beta * coord + (1 - beta) * pBar[j]);
       yPrr = fn(pRr);
       if (yPrr < y[iHigh]) {
-        p[iHigh] = [];
         //22
-        for (let j = 0; j < nDim; j++) {
-          p[iHigh].push(pRr[j]);
-        }
+        p[iHigh] = [...pRr];
         y[iHigh] = yPrr;
       } else {
         //24
