@@ -40,11 +40,12 @@ const minimize = (p, fn, fTol, itMax) => {
     const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * p[iHigh][j]);
     const yPr = fn(pR);
     if (yPr <= y[iLow]) {
-      pRr = [];
-      //16
-      for (let j = 0; j < nDim; j++) {
-        pRr.push(gamma * pR[j] + (1 - gamma) * pBar[j]);
-      }
+      // pRr = [];
+      // 16
+      // // for (let j = 0; j < nDim; j++) {
+        // pRr.push(gamma * pR[j] + (1 - gamma) * pBar[j]);
+      // }
+      const pRr = pR.map((coord, j) => gamma * coord + (1 - gamma) * pBar[j]);
       const yPrr = fn(pRr);
       if (yPrr < y[iLow]) {
         //17
@@ -68,9 +69,7 @@ const minimize = (p, fn, fTol, itMax) => {
         y[iHigh] = yPr;
       }
       //21
-      for (let j = 0; j < nDim; j++) {
-        pRr[j] = beta * p[iHigh][j] + (1 - beta) * pBar[j];
-      }
+      const pRr = p[iHigh].map((coord, j) => beta * coord + (1 - beta) * pBar[j]);
       yPrr = fn(pRr);
       if (yPrr < y[iHigh]) {
         p[iHigh] = [];
