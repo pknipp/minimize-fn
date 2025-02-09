@@ -13,11 +13,10 @@ const minimize = (pIn, fn, fTol, itMax) => {
   const mPts = nDim + 1;
   let iter = 0;
   const results = {p, y};
-  //1
   while (iter < itMax) {
+    //First determine which point is the highest (worst), next-highest, and lowest (best), by looping over the points in the simplex.
     let iLow = 0;
     let [iHigh, iNextHigh] = (y[0] > y[1]) ? [0, 1] : [0, 1];
-    //11
     for (let i = 0; i < mPts; i++) {
       if (y[i] < y[iLow]) iLow = i;
       if (y[i] > y[iHigh]) {
@@ -26,30 +25,32 @@ const minimize = (pIn, fn, fTol, itMax) => {
         if (i !== iHigh) iNextHigh = i;
       }
     }
+    // Compute the fractional range from highest to lowest and return if satisfactory.
     const rTol = 2 * Math.abs(y[iHigh] - y[iLow]) / (Math.abs(y[iHigh]) + Math.abs(y[iLow]));
     if (rTol < fTol) return {...results, iter};
     iter++;
-    //12
+    // Begin a new iteration.  Computer the vector average of all points except for the highest, ie the center of the "face" of the simplex across from the high point.  We will subsequently explore along the ray from the high point through that center.
     const pBar = new Array(nDim).fill(0);
-    //14
     for (let j = 0; j < nDim; j++) {
       for (let i = 0; i < mPts; i++) {
         if (i !== iHigh) pBar[j] += p[i][j] / nDim;
       }
     }
-    // 15
+    // Extrapolate by a factor alpha through the face, ie reflect the simplex from the high point.
     const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * p[iHigh][j]);
+    // Evaluate the function at hte reflected point.
     const yPr = fn(pR);
     if (yPr <= y[iLow]) {
-      // 16
+      // This gives a better result than the high point, so try an additional extrapolation by a factor gamma.
       const pRr = pR.map((coord, j) => gamma * coord + (1 - gamma) * pBar[j]);
+      // Check out the function after gamma-extrapolation.
       const yPrr = fn(pRr);
-      // 17 & 18
+      // This ternary handles cases when the gamma-extrapolation is better or worse.
       [p[iHigh], y[iHigh]] = (yPrr < y[iLow]) ? [[...pRr], yPrr] : [[...pR], yPr];
     } else if (yPr >= iNextHigh) {
-      //19
+      // The reflected point is worse than the second highest.
+      // The following line replaces the highest, if it's better.
       if (yPr < y[iHigh]) [p[iHigh], y[iHigh]] = [[...pR], yPr];
-      //21
       const pRr = p[iHigh].map((coord, j) => beta * coord + (1 - beta) * pBar[j]);
       yPrr = fn(pRr);
       if (yPrr < y[iHigh]) {
