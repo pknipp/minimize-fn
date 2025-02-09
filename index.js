@@ -2,15 +2,18 @@
 
 const minimize = (p, fTol, fn) => {
   const [alpha, beta, gamma] = [1, 0.5, 2];
+  const itMax = 500;
   const y = p.map(vec => fn(vec));
   const nDim = p[0].length;
   const mPts = nDim + 1;
   let iter = 0;
   let msg = "";
-  const returnMe = {y, iter, msg};
+  const returnMe = {p, y};
+  //1
   while (true) {
-    const iLow = 0;
+    let iLow = 0;
     let [iHigh, iNextHigh] = (y[0] > y[1]) ? [0, 1] : [0, 1];
+    //11
     for (let i = 0; i < mPts; i++) {
       if (y[i] < y[iLow]) iLow = i;
       if (y[i] > y[iHigh]) {
@@ -18,55 +21,86 @@ const minimize = (p, fTol, fn) => {
       } else if (y[i] > y[iNextHigh]) {
         if (i !== iHigh) iNextHigh = i;
       }
-      const rTol = 2 * Math.abs(y[iHigh] - y[iLow]) / (Math.abs(y[iHigh]) + Math.abs(y[iLow]));
-      if (rTol < fTol) return returnMe;
-      if (iter === itMax) return {...returnMe, msg: "Exceeded maximum iterations."};
-      iter++;
-      const pBar = new Array(nDim).fill(0);
-      for (let i = 0; i < mPts; i++) {
-        if (i !== iHigh) {
-          for (let j = 0; j < nDim; j++) {
-            pBar[j] += p[i][j];
-          }
-        }
-      }
-      const pR = [];
-      // 12
-      for (let i = 0; i < mPts; i++) {
-        if (i !== iHigh) {
-          for (let j = 0; j < nDim; j++) {
-            pBar[j] += p[i][j];
-          }
-        }
-      }
-      //14
-      for (let j = 0; j < nDim; j++) {
-        pBar[j] /= nDim;
-        pR.push((1 + alpha) * pBar[j] - alpha * p[iHigh][j]);
-      }
-      //15
-      const yPr = fn(pR);
-      if (yPr <= y[iLow]) {
-        const pRr = [];
+    }
+    const rTol = 2 * Math.abs(y[iHigh] - y[iLow]) / (Math.abs(y[iHigh]) + Math.abs(y[iLow]));
+    if (rTol < fTol) return {...returnMe, iter};
+    if (iter === itMax) return {...returnMe, iter, msg: "Exceeded maximum iterations."};
+    iter++;
+    //12
+    const pBar = new Array(nDim).fill(0);
+    //14
+    for (let i = 0; i < mPts; i++) {
+      if (i !== iHigh) {
         for (let j = 0; j < nDim; j++) {
-          pRr.push(gamma * pR[j] + (1 - gamma) * pBar[j]);
+          pBar[j] += p[i][j];
         }
-        //16
-        const yPrr = fn(pRr);
-        if (yPrr < y[iLow]) {
-          for (let j = 0; j < nDim; j++) {
-            p[iHigh][j] = pRr[j];
-          }
-          //17
-          y[iHigh] = yPrr;
-        } else {
-          for (let j = 0; j < nDim; j++) {
-            p[iHigh][j] = pR[j];
-          }
-          //18
-          y[iHigh] = yPr
+      }
+    }
+    const pR = [];
+    //15
+    for (let j = 0; j < nDim; j++) {
+      pBar[j] /= nDim;
+      pR.push((1 + alpha) * pBar[j] - alpha * p[iHigh][j]);
+    }
+    const yPr = fn(pR);
+    if (yPr <= y[iLow]) {
+      pRr = [];
+      //16
+      for (let j = 0; j < nDim; j++) {
+        pRr.push(gamma * pR[j] + (1 - gamma) * pBar[j]);
+      }
+      const yPrr = fn(pRr);
+      if (yPrr < y[iLow]) {
+        //17
+        for (let j = 0; j < nDim; j++) {
+          p[iHigh][j] = pRr[j];
         }
-      } else if (yPr >= iNHigh) {}
+        y[iHigh] = yPrr;
+      } else {
+        //18
+        for (let j = 0; j < nDim; j++) {
+          p[iHigh][j] = pR[j];
+        }
+        y[iHigh] = yPr
+      }
+    } else if (yPr >= iNextHigh) {
+      if (yPr < y[iHigh]) {
+        //19
+        for (let j = 0; j < nDim; j++) {
+          p[iHigh][j] = pR[j];
+        }
+        y[iHigh] = yPr;
+      }
+      //21
+      for (let j = 0; j < nDim; j++) {
+        pRr[j] = beta * p[iHigh][j] + (1 - beta) * pBar[j];
+      }
+      yPrr = fn(pRr);
+      if (yPrr < y[iHigh]) {
+        p[iHigh] = [];
+        //22
+        for (let j = 0; j < nDim; j++) {
+          p[iHigh].push(pRr[j]);
+        }
+        y[iHigh] = yPrr;
+      } else {
+        //24
+        for (let i = 0; i < mPts; i++) {
+          if (i !== iLow) {
+            //23
+            for (let j = 0; j < nDim; j++) {
+              p[iHigh][j] = pR[j];
+            }
+          }
+        }
+      }
+    } else {
+      p[iHigh] = []
+      //25
+      for (let j = 0; j < nDim; j++) {
+        p[iHigh].push(pR[j])
+      }
+      y[iHigh] = yPr;
     }
   }
 }
