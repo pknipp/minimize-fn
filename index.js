@@ -29,13 +29,14 @@ const minimize = (p, fn, fTol, itMax) => {
     //12
     const pBar = new Array(nDim).fill(0);
     //14
-    for (let i = 0; i < mPts; i++) {
-      if (i !== iHigh) {
-        for (let j = 0; j < nDim; j++) {
+    for (let j = 0; j < nDim; j++) {
+      for (let i = 0; i < mPts; i++) {
+        if (i !== iHigh) {
           pBar[j] += p[i][j] / nDim;
         }
       }
     }
+
     // 15
     const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * p[iHigh][j]);
     const yPr = fn(pR);
