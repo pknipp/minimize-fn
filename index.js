@@ -40,18 +40,12 @@ const minimize = (p, fn, fTol, itMax) => {
     const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * p[iHigh][j]);
     const yPr = fn(pR);
     if (yPr <= y[iLow]) {
-      // pRr = [];
       // 16
-      // // for (let j = 0; j < nDim; j++) {
-        // pRr.push(gamma * pR[j] + (1 - gamma) * pBar[j]);
-      // }
       const pRr = pR.map((coord, j) => gamma * coord + (1 - gamma) * pBar[j]);
       const yPrr = fn(pRr);
       if (yPrr < y[iLow]) {
         //17
-        for (let j = 0; j < nDim; j++) {
-          p[iHigh][j] = pRr[j];
-        }
+        p[iHigh] = [...pRr];
         y[iHigh] = yPrr;
       } else {
         //18
