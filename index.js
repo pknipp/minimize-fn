@@ -49,9 +49,10 @@ const minimize = (p, fn, fTol, itMax) => {
         y[iHigh] = yPrr;
       } else {
         //18
-        for (let j = 0; j < nDim; j++) {
-          p[iHigh][j] = pR[j];
-        }
+        // for (let j = 0; j < nDim; j++) {
+          // p[iHigh][j] = pR[j];
+        // }
+        p[iHigh] = [...pR];
         y[iHigh] = yPr
       }
     } else if (yPr >= iNextHigh) {
