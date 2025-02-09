@@ -1,24 +1,11 @@
 // Taken from Chap 10, p 404 of https://s3.amazonaws.com/nrbook.com/book_F210.html
 const amoeba = (p,fTol,func) => {
-// INTEGER iter,mp,ndim,np,NMAX,ITMAX
-// REAL ftol,p(mp,np),y(mp),funk,TINY
-// Maximum allowed dimensions and function evaluations, and a small number.
 const nMax = 20;
 const itMax = 5000;
 const tiny = 1.e-10;
 const y = p.map(vec => func(vec));
 const nDim = p[0].length;
-// EXTERNAL funk
-// USES amotry,funk
-// Multidimensional minimization of the function funk(x) where x(1:ndim) is a vector
-// in ndim dimensions, by the downhill simplex method of Nelder and Mead. The matrix
-// p(1:ndim+1,1:ndim) is input. Its ndim+1 rows are ndim-dimensional vectors which are
-// the vertices of the starting simplex. Also input is the vector y(1:ndim+1), whose components must be pre-initialized to the values of funk evaluated at the ndim+1 vertices (rows)
-// of p; and ftol the fractional convergence tolerance to be achieved in the function value
-// (n.b.!). On output, p and y will have been reset to ndim+1 new points all within ftol of
-// a minimum function value, and iter gives the number of function evaluations taken.
-// INTEGER i,ihi,ilo,inhi,j,m,n
-// REAL rtol,sum,swap,ysave,ytry,psum(NMAX),amotry
+
 let iter = 0;
 // Enter here when starting or have just overall contracted.
 while (true) {
