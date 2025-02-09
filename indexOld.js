@@ -1,11 +1,13 @@
 // Taken from Chap 10, p 404 of https://s3.amazonaws.com/nrbook.com/book_F210.html
-const amoeba = (p,y,mp,np,ndim,ftol,funk,iter) => {
+const amoeba = (p,fTol,func) => {
 // INTEGER iter,mp,ndim,np,NMAX,ITMAX
 // REAL ftol,p(mp,np),y(mp),funk,TINY
 // Maximum allowed dimensions and function evaluations, and a small number.
-const NMAX = 20;
-const ITMAX = 5000;
-const TINY = 1.e-10;
+const nMax = 20;
+const itMax = 5000;
+const tiny = 1.e-10;
+const y = p.map(vec => func(vec));
+const nDim = p[0].length;
 // EXTERNAL funk
 // USES amotry,funk
 // Multidimensional minimization of the function funk(x) where x(1:ndim) is a vector
@@ -17,8 +19,9 @@ const TINY = 1.e-10;
 // a minimum function value, and iter gives the number of function evaluations taken.
 // INTEGER i,ihi,ilo,inhi,j,m,n
 // REAL rtol,sum,swap,ysave,ytry,psum(NMAX),amotry
-const iter = 0;
+let iter = 0;
 // Enter here when starting or have just overall contracted.
+while (true) {
 1 do 12 n=1,ndim
 // Recompute psum.
 const sum = 0;
@@ -97,3 +100,5 @@ endif
 goto 2
 END
 }
+
+module.exports = minimize

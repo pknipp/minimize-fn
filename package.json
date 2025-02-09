@@ -1,0 +1,25 @@
+{
+  "name": "minimize-fn",
+  "version": "1.0.0",
+  "description": "This finds a local minimum of a function when given an initial guess.",
+  "main": "index.js",
+  "scripts": {
+    "test": "my test command should go here"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pknipp/minimize-fn.git"
+  },
+  "keywords": [
+    "minimum",
+    "maximum",
+    "local",
+    "simplex"
+  ],
+  "author": "Peter Knipp",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pknipp/minimize-fn/issues"
+  },
+  "homepage": "https://github.com/pknipp/minimize-fn#readme"
+}
