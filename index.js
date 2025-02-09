@@ -87,11 +87,8 @@ const minimize = (p, fn, fTol, itMax) => {
         }
       }
     } else {
-      p[iHigh] = []
       //25
-      for (let j = 0; j < nDim; j++) {
-        p[iHigh].push(pR[j])
-      }
+      p[iHigh] = [...pR];
       y[iHigh] = yPr;
     }
   }
