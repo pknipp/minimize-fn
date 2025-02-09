@@ -51,23 +51,24 @@ const minimize = (pIn, fn, fTol, itMax) => {
       // The reflected point is worse than the second highest.
       // The following line replaces the highest, if it's better.
       if (yPr < y[iHigh]) [p[iHigh], y[iHigh]] = [[...pR], yPr];
+      // Look for an intermediate lower point.  In other words, perform a contraction of the simplex along one dimension ...
       const pRr = p[iHigh].map((coord, j) => beta * coord + (1 - beta) * pBar[j]);
+      // ... and then evaluate the function.
       yPrr = fn(pRr);
       if (yPrr < y[iHigh]) {
-        //22
+        // Contraction gives an improvement, so accept it.
         [p[iHigh], y[iHigh]] = [[...pRr], yPrr];
       } else {
-        //24
+        // We cannot seem to get rid of that high point, so we better contract along the lowest (best) point.
         for (let i = 0; i < mPts; i++) {
           if (i !== iLow) {
-            //23
             pR = p[i].map((coord, j) => (coord + p[iLow][j]) / 2);
             [p[i], y[i]] = [[...pR], fn[pR]];
           }
         }
       }
     } else {
-      //25
+      // We arrive here if the original reflection gives a middling point.  Replace the old high point and continue.
       [p[iHigh], y[iHigh]] = [[...pR], yPr];
     }
   }
