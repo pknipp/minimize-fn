@@ -2,23 +2,30 @@
 
 class Minimizer {
   // Multidimensional minimization of the function fn(x) where x is a vector in nDim dimensions, by the downhill simplex method of Nelder and Mead. The matrix pIn is input. Its nDim + 1 rows are nDim-dimensional vectors which are the vertices of the starting simplex. Also input are fTol the fractional convergence tolerance to be achieved in the function value (n.b.!) and itMax, the maximimum allowed number of iterations. If itMax is not input, it will be set to 500.  If fTol also is not input, it will be set to 1e-10.  After invoking the run method, the p and y fields will have been reset to nDim+1 new points all within ftol of a minimum function value, and iter gives the number of function evaluations taken.
-  constructor (pIn, fn) {
+  constructor (fn, nDimOrP) {
     this.fn = fn;
     // The following four fields will probably get mutated by an invocation of the run method.
-    this.p = JSON.parse(JSON.stringify(pIn));
+    const isArray = Array.isArray(nDimOrP) && nDimOrP.length && Array.isArray(nDimOrP[0]) && nDimOrP[0].length;
+    const isNumber = typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0;
+    this.p = isArray
+      ? JSON.parse(JSON.stringify(nDimOrP))
+      : isNumber
+      ? ((new Array(nDimOrP + 1).fill(null))).map((arr, i) => {
+        return (new Array(nDimOrP).fill(0)).map((elem, j) => (i === j && i !== nDimOrP + 1) ? 1 : 0);
+      })
+      : null;
     this.y = null;
     this.iter = 0;
+    const arg2 = JSON.stringify(nDimOrP);
     this.error = typeof fn !== "function"
-      ? `The second argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
-      : !Array.isArray(pIn) || !pIn.length
-      ? `The first argument (${JSON.stringify(pIn)}) of Minimizer must be a non-empty array.`
-      : !pIn.every(coord => Array.isArray(coord)) || !pIn[0].length || !pIn.every(coord => coord.length === pIn[0].length)
-      ? `Every element of the first argument (${JSON.stringify(pIn)}) of Minimizer must be an array of a length which is nonzero and which equals ${pIn[0].length}.`
-      : pIn.length !== pIn[0].length + 1
-      ? `The simplex should have ${pIn[0].length + 1} vertices, not ${pIn.length}.`
-      : !pIn.every(array => array.every(elem => Number.isFinite(elem)))
-      ? `Every element in every element of the first argument (${JSON.stringify(pIn)}) of Minimizer must be a finite number.`
-      :null;
+      ? `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
+      : !(typeof nDimOrP === "number" || (Array.isArray(nDimOrP) && nDimOrP.length))
+      ? `The second argument (${arg2}) is neither a positive integer nor a non-empty array.`
+      : typeof nDimOrP === "number" && !(Number.isInteger(nDimOrP) && nDimOrP)
+      ? `The second argument (${arg2}) needs to be a positive integer.`
+      : Array.isArray(nDimOrP) && nDimOrP.length && !(Array.isArray(nDimOrP[0]) && nDimOrP[0].length)
+      ? `The elements of the second argument (${arg2}) also need to be non-empty arrays.`
+      : null;
   }
 
   run(fTol, iterMax) {
