@@ -6,12 +6,23 @@ class Minimizer {
     this.fn = fn;
     // The following four fields will probably get mutated by an invocation of the run method.
     this.p = JSON.parse(JSON.stringify(pIn));
-    this.y = new Array(pIn.length).fill(0);
+    this.y = null;
     this.iter = 0;
-    this.error = "";
+    this.error = typeof fn !== "function"
+      ? `The second argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
+      : !Array.isArray(pIn) || !pIn.length
+      ? `The first argument (${JSON.stringify(pIn)}) of Minimizer must be a non-empty array.`
+      : !pIn.every(coord => Array.isArray(coord)) || !pIn[0].length || !pIn.every(coord => coord.length === pIn[0].length)
+      ? `Every element of the first argument (${JSON.stringify(pIn)}) of Minimizer must be an array of a length which is nonzero and which equals ${pIn[0].length}.`
+      : pIn.length !== pIn[0].length + 1
+      ? `The simplex should have ${pIn[0].length + 1} vertices, not ${pIn.length}.`
+      : !pIn.every(array => array.every(elem => Number.isFinite(elem)))
+      ? `Every element in every element of the first argument (${JSON.stringify(pIn)}) of Minimizer must be a finite number.`
+      :null;
   }
 
   run(fTol, iterMax) {
+    if (this.error) return this;
     fTol = fTol || 1e-10;
     iterMax = iterMax || 500;
     const [alpha, beta, gamma] = [1, 0.5, 2];
