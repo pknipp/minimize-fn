@@ -16,15 +16,15 @@ class Minimizer {
       : null;
     this.y = null;
     this.iter = 0;
-    const arg2 = JSON.stringify(nDimOrP);
+    const arg2 = `second argument (${JSON.stringify(nDimOrP)})`;
     this.error = typeof fn !== "function"
       ? `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
       : !((typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0) || (Array.isArray(nDimOrP) && nDimOrP.length > 1))
-      ? `The second argument (${arg2}) is neither a positive integer nor an array whose length exceeds 1.`
+      ? `The ${arg2} is neither a positive integer nor an array whose length exceeds 1.`
       : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => (Array.isArray(arr) && arr.length === nDimOrP.length - 1)))
-      ? `Each element of the second argument (${arg2}) needs itself to be a ${nDimOrP.length - 1}-element array.`
-      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => arr.every(element => typeof element === "number")))
-      ? `Each element of each elementthe second argument ${arg2} must be a number.`
+      ? `Each element of the ${arg2} needs itself to be a ${nDimOrP.length - 1}-element array.`
+      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => arr.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))))
+      ? `Each element of each element of the ${arg2} must be a number.`
       : null;
   }
 
