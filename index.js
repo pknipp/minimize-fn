@@ -19,12 +19,12 @@ class Minimizer {
     const arg2 = JSON.stringify(nDimOrP);
     this.error = typeof fn !== "function"
       ? `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
-      : !(typeof nDimOrP === "number" || (Array.isArray(nDimOrP) && nDimOrP.length))
-      ? `The second argument (${arg2}) is neither a positive integer nor a non-empty array.`
-      : typeof nDimOrP === "number" && !(Number.isInteger(nDimOrP) && nDimOrP)
-      ? `The second argument (${arg2}) needs to be a positive integer.`
-      : Array.isArray(nDimOrP) && nDimOrP.length && !(Array.isArray(nDimOrP[0]) && nDimOrP[0].length)
-      ? `The elements of the second argument (${arg2}) also need to be non-empty arrays.`
+      : !((typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0) || (Array.isArray(nDimOrP) && nDimOrP.length > 1))
+      ? `The second argument (${arg2}) is neither a positive integer nor an array whose length exceeds 1.`
+      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => (Array.isArray(arr) && arr.length === nDimOrP.length - 1)))
+      ? `Each element of the second argument (${arg2}) needs itself to be a ${nDimOrP.length - 1}-element array.`
+      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => arr.every(element => typeof element === "number")))
+      ? `Each element of each elementthe second argument ${arg2} must be a number.`
       : null;
   }
 
@@ -34,8 +34,8 @@ class Minimizer {
     iterMax = iterMax || 500;
     const [alpha, beta, gamma] = [1, 0.5, 2];
     this.y = this.p.map(vec => this.fn(vec));
-    const nDim = this.p[0].length;
-    const mPts = nDim + 1;
+    const mPts = this.p.length
+    const nDim = mPts - 1;
     while (this.iter < iterMax) {
       //First determine which point is the highest (worst), next-highest, and lowest (best), by looping over the points in the simplex.
       let iLow = 0;
