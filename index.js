@@ -34,6 +34,10 @@ class Minimizer {
     iterMax = iterMax || 500;
     const [alpha, beta, gamma] = [1, 0.5, 2];
     this.y = this.p.map(vec => this.fn(vec));
+    if (!this.y.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))) {
+      this.error = `The function is Infinite or NaN for at least one of the vertices ${JSON.stringify(this.y)} of the simplex.`;
+      return this;
+    }
     const mPts = this.p.length
     const nDim = mPts - 1;
     while (this.iter < iterMax) {
@@ -86,7 +90,7 @@ class Minimizer {
           for (let i = 0; i < mPts; i++) {
             if (i !== iLow) {
               pR = this.p[i].map((coord, j) => (coord + this.p[iLow][j]) / 2);
-              [this.p[i], this.y[i]] = [[...pR], this.fn[pR]];
+              [this.p[i], this.y[i]] = [[...pR], this.fn(pR)];
             }
           }
         }
