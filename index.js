@@ -7,25 +7,34 @@ class Minimizer {
     // The following four fields will probably get mutated by an invocation of the run method.
     const isArray = Array.isArray(nDimOrP) && nDimOrP.length && Array.isArray(nDimOrP[0]) && nDimOrP[0].length;
     const isNumber = typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0;
-    this.p = isArray
-      ? JSON.parse(JSON.stringify(nDimOrP))
-      : isNumber
-      ? ((new Array(nDimOrP + 1).fill(null))).map((arr, i) => {
+
+    this.p = null;
+    if (isArray) {
+      this.p = JSON.parse(JSON.stringify(nDimOrP));
+    }
+    if (isNumber) {
+      this.p = ((new Array(nDimOrP + 1).fill(null))).map((arr, i) => {
         return (new Array(nDimOrP).fill(0)).map((elem, j) => (i === j && i !== nDimOrP + 1) ? 1 : 0);
-      })
-      : null;
+      });
+    }
+
     this.y = null;
     this.iter = 0;
     const arg2 = `second argument (${JSON.stringify(nDimOrP)})`;
-    this.error = typeof fn !== "function"
-      ? `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`
-      : !((typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0) || (Array.isArray(nDimOrP) && nDimOrP.length > 1))
-      ? `The ${arg2} is neither a positive integer nor an array whose length exceeds 1.`
-      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => (Array.isArray(arr) && arr.length === nDimOrP.length - 1)))
-      ? `Each element of the ${arg2} needs itself to be a ${nDimOrP.length - 1}-element array.`
-      : !(Array.isArray(nDimOrP) && nDimOrP.every(arr => arr.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))))
-      ? `Each element of each element of the ${arg2} must be a number.`
-      : null;
+    
+    this.error = null;
+    if (typeof fn !== "function") {
+      this.error = `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`;
+    }
+    if (!((typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0) || (isArray && nDimOrP.length > 1))) {
+      this.error = `The ${arg2} is neither a positive integer nor an array whose length exceeds 1.`;
+    }
+    if (isArray && !(nDimOrP.every(arr => (Array.isArray(arr) && arr.length === nDimOrP.length - 1)))) {
+      this.error = `Each element of the ${arg2} needs itself to be a ${nDimOrP.length - 1}-element array.`;
+    }
+    if (isArray && !(nDimOrP.every(arr => arr.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))))) {
+      this.error = `Each element of each element of the ${arg2} must be a number.`;
+    }
   }
 
   run(fTol, iterMax) {
@@ -64,7 +73,7 @@ class Minimizer {
         }
       }
       // Extrapolate by a factor alpha through the face, ie reflect the simplex from the high point.
-      const pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * this.p[iHigh][j]);
+      let pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * this.p[iHigh][j]);
       // Evaluate the function at hte reflected point.
       const yPr = this.fn(pR);
       if (yPr <= this.y[iLow]) {
