@@ -1,4 +1,4 @@
-//// Taken from Chap 10, p 292 of 1987 edition of Numerical Recipes, by William Press, Brian Flannery, Saul Teukolsky, and william Vetterling.  For a more recent edition, see https://s3.amazonaws.com/nrbook.com/book_F210.html
+// Taken from Chap 10, p 292 of 1987 edition of Numerical Recipes, by William Press, Brian Flannery, Saul Teukolsky, and william Vetterling.  For a more recent edition, see https://s3.amazonaws.com/nrbook.com/book_F210.html
 
 class Minimizer {
   // Multidimensional minimization of the function fn(x) where x is a vector in nDim dimensions, by the downhill simplex method of Nelder and Mead. The matrix pIn is input. Its nDim + 1 rows are nDim-dimensional vectors which are the vertices of the starting simplex. Also input are fTol the fractional convergence tolerance to be achieved in the function value (n.b.!) and itMax, the maximimum allowed number of iterations. If itMax is not input, it will be set to 500.  If fTol also is not input, it will be set to 1e-10.  After invoking the run method, the p and y fields will have been reset to nDim+1 new points all within ftol of a minimum function value, and iter gives the number of function evaluations taken.
@@ -21,7 +21,7 @@ class Minimizer {
     this.y = null;
     this.iter = 0;
     const arg2 = `second argument (${JSON.stringify(nDimOrP)})`;
-    
+
     this.error = null;
     if (typeof fn !== "function") {
       this.error = `The first argument (${fn}) of Minimizer must be a function not a ${typeof fn}.`;
@@ -35,6 +35,7 @@ class Minimizer {
     if (isArray && !(nDimOrP.every(arr => arr.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))))) {
       this.error = `Each element of each element of the ${arg2} must be a number.`;
     }
+    this.warnings = [];
   }
 
   run(fTol, iterMax) {
@@ -42,7 +43,14 @@ class Minimizer {
     fTol = fTol || 1e-10;
     iterMax = iterMax || 500;
     const [alpha, beta, gamma] = [1, 0.5, 2];
-    this.y = this.p.map(vec => this.fn(vec));
+    this.y = [];
+    for (const vertex of this.p) {
+      const result = this.fn(vertex);
+      this.warnings = result.warnings;
+      this.error = result.error;
+      if (this.error) return this;
+      this.y.push(result.value);
+    }
     if (!this.y.every(element => typeof element === "number" && Number.isFinite(element) && !Number.isNaN(element))) {
       this.error = `The function is Infinite or NaN for at least one of the vertices ${JSON.stringify(this.y)} of the simplex.`;
       return this;
@@ -74,13 +82,21 @@ class Minimizer {
       }
       // Extrapolate by a factor alpha through the face, ie reflect the simplex from the high point.
       let pR = pBar.map((coord, j) => (1 + alpha) * coord - alpha * this.p[iHigh][j]);
-      // Evaluate the function at hte reflected point.
-      const yPr = this.fn(pR);
+      // Evaluate the function at the reflected point.
+      let result = this.fn(pR);
+      this.warnings = result.warnings;
+      this.error = result.error;
+      if (this.error) return this;
+      const yPr = result.value;
       if (yPr <= this.y[iLow]) {
         // This gives a better result than the high point, so try an additional extrapolation by a factor gamma.
         const pRr = pR.map((coord, j) => gamma * coord + (1 - gamma) * pBar[j]);
         // Check out the function after gamma-extrapolation.
-        const yPrr = this.fn(pRr);
+        const result = this.fn(pRr);
+        this.warnings = result.warnings;
+        this.error = result.error;
+        if (this.error) return this;
+        const yPrr = result.value;
         // This ternary handles cases when the gamma-extrapolation is better or worse.
         [this.p[iHigh], this.y[iHigh]] = (yPrr < this.y[iLow]) ? [[...pRr], yPrr] : [[...pR], yPr];
       } else if (yPr >= iNextHigh) {
@@ -90,7 +106,11 @@ class Minimizer {
         // Look for an intermediate lower point.  In other words, perform a contraction of the simplex along one dimension ...
         const pRr = this.p[iHigh].map((coord, j) => beta * coord + (1 - beta) * pBar[j]);
         // ... and then evaluate the function.
-        const yPrr = this.fn(pRr);
+        const result = this.fn(pRr);
+        this.warnings = result.warnings;
+        this.error = result.error;
+        if (this.error) return this;
+        const yPrr = result.value;
         if (yPrr < this.y[iHigh]) {
           // Contraction gives an improvement, so accept it.
           [this.p[iHigh], this.y[iHigh]] = [[...pRr], yPrr];
@@ -99,7 +119,11 @@ class Minimizer {
           for (let i = 0; i < mPts; i++) {
             if (i !== iLow) {
               pR = this.p[i].map((coord, j) => (coord + this.p[iLow][j]) / 2);
-              [this.p[i], this.y[i]] = [[...pR], this.fn(pR)];
+              const result = this.fn(pR);
+              this.warnings = result.warnings;
+              this.error = result.error;
+              if (this.error) return this;
+              [this.p[i], this.y[i]] = [[...pR], result.value];
             }
           }
         }
