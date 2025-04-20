@@ -2,8 +2,9 @@
 
 class Minimizer {
   // Multidimensional minimization of the function fn(x) where x is a vector in nDim dimensions, by the downhill simplex method of Nelder and Mead. The matrix pIn is input. Its nDim + 1 rows are nDim-dimensional vectors which are the vertices of the starting simplex. Also input are fTol the fractional convergence tolerance to be achieved in the function value (n.b.!) and itMax, the maximimum allowed number of iterations. If itMax is not input, it will be set to 500.  If fTol also is not input, it will be set to 1e-10.  After invoking the run method, the p and y fields will have been reset to nDim+1 new points all within ftol of a minimum function value, and iter gives the number of function evaluations taken.
-  constructor (fn, nDimOrP) {
+  constructor (fn, nDimOrP, maxIter) {
     this.fn = fn;
+    this.maxIter = maxIter || 500;
     // The following four fields will probably get mutated by an invocation of the run method.
     const isArray = Array.isArray(nDimOrP) && nDimOrP.length && Array.isArray(nDimOrP[0]) && nDimOrP[0].length;
     const isNumber = typeof nDimOrP === "number" && Number.isInteger(nDimOrP) && nDimOrP > 0;
@@ -38,10 +39,9 @@ class Minimizer {
     this.warnings = [];
   }
 
-  run(fTol, iterMax) {
+  run(fTol) {
     if (this.error) return this;
     fTol = fTol || 1e-10;
-    iterMax = iterMax || 500;
     const [alpha, beta, gamma] = [1, 0.5, 2];
     this.y = [];
     for (const vertex of this.p) {
@@ -57,7 +57,7 @@ class Minimizer {
     }
     const mPts = this.p.length
     const nDim = mPts - 1;
-    while (this.iter < iterMax) {
+    while (this.iter < this.maxIter) {
       //First determine which point is the highest (worst), next-highest, and lowest (best), by looping over the points in the simplex.
       let iLow = 0;
       let [iHigh, iNextHigh] = (this.y[0] > this.y[1]) ? [0, 1] : [0, 1];

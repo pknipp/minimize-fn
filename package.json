@@ -1,6 +1,6 @@
 {
   "name": "minimize-fn",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This finds a local minimum of a function when given an initial guess.",
   "main": "index.js",
   "scripts": {
